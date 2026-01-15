@@ -7,51 +7,128 @@
     <title>E-mail IA</title>
 </head>
 <body>
-    <div class="container">
+    <div id="toastRegion" class="toasts" aria-live="polite" aria-atomic="true"></div>
+
+    <div id="splash" class="splash" role="dialog" aria-label="Boas-vindas">
+        <div class="splash-inner">
+            <div class="splash-badge">E-mail AI</div>
+            <h1 class="splash-title">Seja bem-vindo ao E-mail AI</h1>
+            <p class="splash-subtitle">Preparando uma experiência inteligente para classificar seus e-mails.</p>
+            <div class="splash-loader" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </div>
+            <p class="splash-hint">Dica: você pode colar texto ou enviar .txt/.pdf</p>
+        </div>
+    </div>
+
+    <div id="app" class="container app-hidden">
 
         <div class="header">
             <h1>E-mail IA</h1>
             <p class="subtitle">
                 Classificação inteligente de e-mails corporativos
             </p>
+
+            <div class="topbar">
+                <div class="topbar-left">
+                    <div class="top-pill" title="Analytics local (no seu navegador)">
+                        <span class="dot"></span>
+                        <span><strong id="aTodayMini">0</strong> hoje</span>
+                        <span class="sep">•</span>
+                        <span><strong id="aTotalMini">0</strong> total</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Alternar modo escuro">
+                        <span id="themeIcon" class="theme-icon" aria-hidden="true">☾</span>
+                        <span id="themeText">Modo escuro</span>
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="input-mode">
             <button id="btnText" class="mode-btn active">Texto</button>
             <button id="btnFile" class="mode-btn">Arquivo (.txt / .pdf)</button>
         </div>
-        <div id="inputArea">
-            <div id="textInput" class="input-block">
-                <label class="field-label">Conteúdo do e-mail</label>
-                <textarea
-                    id="email_text"
-                    placeholder="Cole o texto do e-mail aqui..."></textarea>
-            </div>
-            <div id="fileInput" class="input-block hidden">
-                <label class="field-label">Selecione um arquivo</label>
-                <div class="file-row">
-                    <input type="file" id="email_file" accept=".txt,.pdf">
-                    <div id="fileInfo" class="file-info">Nenhum arquivo</div>
+        <form id="emailForm" novalidate>
+            <div id="inputArea">
+                <div id="textInput" class="input-block">
+                    <label class="field-label" for="email_text">Conteúdo do e-mail</label>
+                    <textarea
+                        id="email_text"
+                        placeholder="Cole o texto do e-mail aqui..."></textarea>
+                    <div class="input-meta">
+                        <div id="inputHint" class="input-hint">Cole um e-mail ou selecione um arquivo.</div>
+                        <div id="charCount" class="char-count">0 caracteres</div>
+                    </div>
                 </div>
-                <p class="hint">O conteúdo do arquivo será extraído e colocado no campo de texto automaticamente.</p>
+
+                <div id="fileInput" class="input-block hidden">
+                    <label class="field-label">Selecione um arquivo</label>
+                    <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Arraste e solte um arquivo .txt ou .pdf">
+                        <div class="drop-title">Arraste e solte aqui</div>
+                        <div class="drop-sub">ou escolha um arquivo</div>
+                        <div class="file-row">
+                            <input type="file" id="email_file" accept=".txt,.pdf">
+                            <div id="fileInfo" class="file-info">Nenhum arquivo</div>
+                        </div>
+                    </div>
+                    <div id="filePreview" class="file-preview hidden" aria-live="polite"></div>
+                </div>
             </div>
-        </div>
-        <button id="submitBtn" class="primary">Processar e-mail</button>
+
+            <button id="submitBtn" class="primary" type="submit" disabled>Processar e-mail</button>
+        </form>
         <div id="loading" class="loading-overlay hidden">
             <div class="loading-card">
                 <div class="spinner" aria-hidden="true"></div>
                 <p>Analisando e-mail... Aguarde.</p>
             </div>
         </div>
-        <div id="result" class="result-card hidden">
+        <div id="result" class="result-card hidden" aria-live="polite">
             <div class="result-header">
                 <div id="badge" class="badge"></div>
                 <h3>Resposta sugerida</h3>
             </div>
-            <p id="resposta" class="response-text"></p>
+            <p id="resposta" class="response-text" role="status" aria-live="polite"></p>
             <div class="result-actions">
                 <button id="copyBtn" class="secondary">Copiar resposta</button>
                 <button id="restartBtn" class="ghost hidden">Novo e-mail</button>
             </div>
+        </div>
+
+        <div id="history" class="history hidden">
+            <div class="history-header">
+                <h4>Histórico</h4>
+                <button id="clearHistoryBtn" class="ghost-sm" type="button">Limpar</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+        </div>
+
+        <div id="analytics" class="analytics">
+            <div class="analytics-header">
+                <h4>Desempenho</h4>
+                <button id="resetAnalyticsBtn" class="ghost-sm" type="button">Zerar</button>
+            </div>
+            <div class="analytics-grid">
+                <div class="a-card">
+                    <div class="a-label">Processados hoje</div>
+                    <div id="aToday" class="a-value">0</div>
+                </div>
+                <div class="a-card">
+                    <div class="a-label">Total</div>
+                    <div id="aTotal" class="a-value">0</div>
+                </div>
+                <div class="a-card">
+                    <div class="a-label">Produtivo</div>
+                    <div id="aProd" class="a-value">0</div>
+                </div>
+                <div class="a-card">
+                    <div class="a-label">Improdutivo</div>
+                    <div id="aImprod" class="a-value">0</div>
+                </div>
+            </div>
+            <div id="aMeta" class="analytics-meta"></div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
