@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>E-mail IA</title>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>E-mail IA</h1>
+            <p class="subtitle">
+                Classificação inteligente de e-mails corporativos
+            </p>
+        </div>
+        <div class="input-mode">
+            <button id="btnText" class="mode-btn active">Texto</button>
+            <button id="btnFile" class="mode-btn">Arquivo (.txt / .pdf)</button>
+        </div>
+        <div id="inputArea">
+            <div id="textInput" class="input-block">
+                <label class="field-label">Conteúdo do e-mail</label>
+                <textarea
+                    id="email_text"
+                    placeholder="Cole o texto do e-mail aqui..."></textarea>
+            </div>
+            <div id="fileInput" class="input-block hidden">
+                <label class="field-label">Selecione um arquivo</label>
+                <div class="file-row">
+                    <input type="file" id="email_file" accept=".txt,.pdf">
+                    <div id="fileInfo" class="file-info">Nenhum arquivo</div>
+                </div>
+                <p class="hint">O conteúdo do arquivo será extraído e colocado no campo de texto automaticamente.</p>
+            </div>
+        </div>
+        <button id="submitBtn" class="primary">Processar e-mail</button>
+        <div id="loading" class="loading-overlay hidden">
+            <div class="loading-card">
+                <div class="spinner" aria-hidden="true"></div>
+                <p>Analisando e-mail... Aguarde.</p>
+            </div>
+        </div>
+        <div id="result" class="result-card hidden">
+            <div class="result-header">
+                <div id="badge" class="badge"></div>
+                <h3>Resposta sugerida</h3>
+            </div>
+            <p id="resposta" class="response-text"></p>
+            <div class="result-actions">
+                <button id="copyBtn" class="secondary">Copiar resposta</button>
+                <button id="restartBtn" class="ghost hidden">Novo e-mail</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';}</script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

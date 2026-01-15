@@ -1,0 +1,22 @@
+# Environment / secrets
+**/.env
+**/.env.*
+
+# Python virtualenvs
+**/.venv/
+**/venv/
+
+# Python cache
+**/__pycache__/
+**/*.py[cod]
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Jupyter / misc
+.ipynb_checkpoints/
+
+# Optional: local model artifacts (uncomment if you don't want them in git)
+# **/*.joblib
