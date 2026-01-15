@@ -13,66 +13,78 @@ Projeto simples em Flask para classificar e-mails como `Produtivo` ou `Improduti
 - Histórico e analytics simples salvos no `localStorage` do navegador.
 
 **Requisitos mínimos**
-- Python 3.10+ recomendado
-- Dependências listadas em [requirements.txt](requirements.txt) (versão mínima) ou [requirements-current.txt](requirements-current.txt) para ambiente reproduzível.
+# E-mail IA
 
-Instale numa venv e instale dependências:
+Aplicação web em Flask para classificação de mensagens de e-mail e sugestão automática de respostas. O projeto foi desenvolvido com foco em clareza de implementação, facilidade de uso local e extensibilidade para experimen-tação com modelos de NLP.
 
-```bash
+**Resumo**
+- Classifica mensagens como **Produtivo** ou **Improdutivo** e fornece uma resposta em português.
+- Permite colar texto ou fazer upload de `.txt`/`.pdf` (pré-visualização no cliente e extração de texto no servidor).
+- Mantém histórico e métricas simples no navegador (armazenamento local), sem persistência server-side por padrão.
+
+**Recursos principais**
+- Classificação com priorização de sinais explícitos (agradecimento/felicitação).
+- Suporte a modelo scikit-learn salvo em disco (`servicos/model.joblib` e `servicos/vectorizer.joblib`).
+- Fallback para heurística de palavras-chave e tentativa de zero-shot via HuggingFace quando disponível.
+
+**Requisitos**
+- Python 3.10+ (recomendado).
+- Dependências básicas em `requirements.txt`. Para ambiente completo com Transformers, usar `requirements-current.txt`.
+
+Instalação (Windows PowerShell):
+
+```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1   # Windows PowerShell
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-Observação: se quiser usar a versão completa com Transformers/torch (zero-shot), instale as dependências de [requirements-current.txt], mas isso exige mais recursos.
+Observação: instalar `transformers` e `torch` é opcional e consome recursos adicionais.
 
-**Como executar**
-1. Ative a venv.
-2. (Opcional) Treine o modelo com exemplos em `data/training_examples.csv` executando:
-   ```bash
-   python -m servicos.treinador
-   ```
-   Isso criará `servicos/model.joblib` e `servicos/vectorizer.joblib`.
-3. Execute a aplicação:
-   ```bash
-   python app.py
-   ```
-4. Abra `http://127.0.0.1:5000/` no navegador.
+**Execução**
+1. Ativar a virtualenv.
+2. (Opcional) Treinar o classificador com os exemplos em `data/training_examples.csv`:
 
-**Estrutura do projeto**
-- `app.py` : aplicação Flask, rota principal `/` e endpoint POST `/processar` que aceita JSON com `email_text` ou multipart com `email_file` (.txt/.pdf). Usa `servicos.classificador.classificar_email` e `servicos.responder.generate_response`.
-- `servicos/classificador.py` : lógica de classificação. Tenta, nesta ordem: regras de frase de felicitação/agradecimento, modelo scikit-learn carregado de `servicos/model.joblib` + `vectorizer.joblib`, pipeline zero-shot do HuggingFace (se disponível), e por fim heurística simples.
-- `servicos/processador.py` : pré-processamento de texto (nltk: stopwords, RSLP stemmer). Utilizado para treinar modelo; não é chamado diretamente pelo servidor.
-- `servicos/treinador.py` : script para treinar um `LogisticRegression` com `TfidfVectorizer` usando `data/training_examples.csv`.
-- `servicos/responder.py` : mapeia `Produtivo`/`Improdutivo` para uma resposta em português.
-- `servicos/model.joblib`, `servicos/vectorizer.joblib` : modelos serializados (opcionais, já presentes no repositório se incluídos).
-- `templates/index.html` : interface web, usa `static/js/scripts.js` e `static/css/style.css`.
-- `static/js/scripts.js` : lógica do cliente (envio, extração de PDF com pdf.js, histórico, analytics locais, toasts, tema).
-- `static/css/style.css` : estilos do app.
+```powershell
+python -m servicos.treinador
+```
 
-**Treinar o modelo**
-- Edite/veja `data/training_examples.csv` (colunas `text` e `label`).
-- Execute `python -m servicos.treinador` para treinar e salvar `model.joblib` e `vectorizer.joblib` em `servicos/`.
+Isso gera `servicos/model.joblib` e `servicos/vectorizer.joblib` quando o treinamento é executado com `save=True`.
 
-**Observações de desenvolvimento**
-- O classificador tenta carregar arquivos joblib locais; se não existirem, a heurística e/ou Transformers são usados.
-- O uso de Transformers (`transformers` + `torch`) é opcional e só é tentado se estiver instalado; se usar, considere restrições de memória/CPU.
-- `servicos/processador.preprocess_text` baixa `nltk` (stopwords, rslp) em runtime; para ambientes offline, pré-baixe os recursos.
-- A aplicação se baseia em armazenamento local do navegador para histórico e analytics (não há persistência no servidor).
+3. Iniciar a aplicação:
 
-**Segurança & limites**
-- Uploads aceitam apenas `.txt` e `.pdf`. PDFs são processados com `pypdf` no servidor e com `pdf.js` no cliente para pré-visualização.
-- Este projeto não implementa autenticação; não exponha a instância em produção sem camadas adicionais de segurança.
+```powershell
+python app.py
+```
 
-**Próximos passos sugeridos**
-- Adicionar testes automatizados para `classificador` e `treinador`.
-- Adicionar uma pequena API para baixar histórico/analytics do navegador para servidor opcional.
-- Melhorar mensagens e internacionalização (i18n) se necessário.
+4. Abrir no navegador: `http://127.0.0.1:5000/`
+
+**Visão técnica (fluxo resumido)**
+- O endpoint `/processar` em `app.py` aceita JSON (`email_text`) ou multipart/form-data (`email_file`).
+- `servicos/classificador.py` aplica lógica em camadas: detecção de frases de agradecimento/felicitação → inferência com modelo salva-do (se presente) → tentativa de zero-shot (se bibliotecas instaladas) → heurística de palavras-chave.
+- `servicos/treinador.py` treina um `LogisticRegression` com `TfidfVectorizer` usando o CSV em `data/`.
+- A experiência do usuário é implementada em `templates/index.html` e `static/js/scripts.js` (PDF preview, histórico, métricas locais, tema, toasts).
+
+**Estrutura (principais arquivos)**
+- `app.py` — servidor Flask e endpoints.
+- `servicos/classificador.py` — lógica de classificação.
+- `servicos/treinador.py` — rotina de treino e serialização do modelo.
+- `servicos/processador.py` — pré-processamento de texto (NLTK).
+- `servicos/responder.py` — geração de texto de resposta por categoria.
+- `data/training_examples.csv` — exemplos de treino (colunas: `text`, `label`).
+- `templates/index.html`, `static/js/scripts.js`, `static/css/style.css` — front-end.
+
+**Boas práticas e recomendações**
+- Pré-baixar recursos do NLTK (`stopwords`, `rslp`) em ambientes off-line.
+- Incluir testes unitários para `classificador.py` e para o pipeline de treino/serialização.
+- Proteger endpoints e não expor a aplicação sem autenticação em ambientes de produção.
+
+**Melhorias sugeridas (prioridade alta)**
+- Adicionar testes automatizados e pipeline de CI.
+- Implementar persistência server-side opcional para histórico e métricas (API segura).
+- Aumentar o conjunto de treino e avaliar novos vetorizadores/modelos para melhorar acurácia.
 
 ---
 Arquivo principal: [app.py](app.py)
 
-Se quiser, eu posso:
-- Executar a aplicação localmente aqui e verificar o comportamento.
-- Gerar um `requirements.txt` completo a partir de `requirements-current.txt`.
 
