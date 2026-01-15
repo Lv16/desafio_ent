@@ -76,4 +76,3 @@ Se quiser, eu posso:
 - Executar a aplicação localmente aqui e verificar o comportamento.
 - Gerar um `requirements.txt` completo a partir de `requirements-current.txt`.
 
-README gerado automaticamente pelo assistente.
